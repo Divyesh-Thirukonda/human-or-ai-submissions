@@ -1,0 +1,34 @@
+{
+  "name": "word_nb_alpha3",
+  "config": {
+    "kind": "word_nb",
+    "alpha": 3.0
+  },
+  "seed": 20261023,
+  "source_sha256": "325e345faf88fb1c4203278098c282e40319a87b4bf17e094d2f235f51d0c07e",
+  "train_ids_sha256": "0551eef90619722af6551bceaad5c8d6c72f7bbe99084894db17002e1f836219",
+  "validation_ids_sha256": "4febd99980ee6eaed4fd64d37f8acbea575292d7c22d0d36a30e9cfb8337e800",
+  "train_rows": 8000,
+  "validation_rows": 2000,
+  "sensitivity_excluded_validation_ids": [
+    "1018",
+    "137",
+    "4033",
+    "4919",
+    "6062",
+    "7151",
+    "7591",
+    "8470"
+  ],
+  "implementation_sha256": "4e0916a5758e589d28672343c32d49ceacf3bf87d08ba5ed32c76943e519496b",
+  "sklearn_version": "1.9.1",
+  "train_auroc": 0.969852875,
+  "validation_auroc": 0.8959290000000002,
+  "validation_log_loss": 0.49313488680853756,
+  "fit_seconds": 1.741456958989147,
+  "predict_seconds": 0.9668893340276554,
+  "warnings": [],
+  "sensitivity_rows": 1992,
+  "sensitivity_auroc": 0.8953661850864707,
+  "sensitivity_note": "Excluded validation IDs flagged by the fixed full-training source-overlap audit; this is a diagnostic only, not the tuning metric."
+}

@@ -1,0 +1,26 @@
+{
+  "candidates": [
+    {
+      "kind": "style_lr",
+      "C": 1.0
+    },
+    {
+      "kind": "pos_lr",
+      "C": 1.0
+    },
+    {
+      "kind": "surprisal_lr",
+      "C": 1.0
+    },
+    {
+      "kind": "word_style_lr",
+      "C": 1.0
+    }
+  ],
+  "baseline": {
+    "kind": "word_lr",
+    "C": 1.0
+  },
+  "fixed": "same 8000/2000 split, C=1; no bonus tuning",
+  "timing_note": "POS cache is shared per process; later runs may reuse tagging work."
+}

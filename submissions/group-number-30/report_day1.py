@@ -156,6 +156,7 @@ def generate(root):
 \setlength{\parskip}{6pt}
 \begin{document}
 \title{Human or AI? --- Group Number 30\\Day 1 measured report}
+\author{}
 \date{November 5, 2026}
 \maketitle
 \input{day1_sections.tex}
