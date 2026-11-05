@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib.metadata
 import json
 import os
 import platform
@@ -11,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from data_utils import audit_data, get_or_create_split, load_data, nested_stratified_subsets
-from experiment import THREADS, evaluate, paired_bootstrap, write_json
+from experiment import THREADS, evaluate, paired_bootstrap, write_json, runtime_identity, verify_environment
 from models import SEED
 
 
@@ -42,13 +41,15 @@ def main():
     audit = audit_data(data, train, validation, **other)
     write_json(out / 'audit.json', audit)
     sensitivity = audit.get('source_overlap_sensitivity', {}).get('excluded_validation_ids')
-    environment = {'python': platform.python_version(), 'platform': platform.platform(),
-                   'versions': {name: importlib.metadata.version(name) for name in
-                                ('numpy', 'pandas', 'scipy', 'scikit-learn', 'matplotlib', 'joblib', 'nltk')},
+    environment = {**runtime_identity(), 'platform': platform.platform(),
                    'seed': SEED, 'threads': THREADS, 'schema': {'id': 'id', 'text': 'text', 'label': 'label'},
                    'source_sha256': data.attrs['source_sha256'], 'NLTK_DATA': os.environ.get('NLTK_DATA', 'not set'),
                    'calibration': 'Three seeded stratified inner folds; sigmoid; training-only shared vocabulary/IDF'}
-    if not (args.resume and (out / 'environment.json').is_file()):
+    if args.resume and (out / 'environment.json').is_file():
+        verify_environment(json.loads((out / 'environment.json').read_text()), environment)
+    else:
+        if args.resume and ((out / 'comparison.json').is_file() or any((out / 'runs').glob('*.json'))):
+            parser.error('Recorded runs lack environment.json; cannot verify resume provenance')
         write_json(out / 'environment.json', environment)
     candidates = [{'kind': kind, 'C': c} for kind in ('word_lr', 'char_lr') for c in (.3, 1., 3.)]
     candidates += [{'kind': 'word_nb', 'alpha': alpha} for alpha in (.1, 1., 3.)]

@@ -10,6 +10,7 @@ from sklearn.naive_bayes import ComplementNB
 from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
+from sklearn.ensemble import VotingClassifier
 
 SEED = 20261023
 
@@ -22,6 +23,16 @@ def word_vectorizer():
 def build_model(config, *, seed=SEED):
     """All learned text preprocessing is inside the returned estimator."""
     kind = config.get('kind')
+    if kind == 'char_style_blend':
+        if set(config) != {'kind', 'char_C', 'word_style_C', 'weights'}:
+            raise ValueError('Blend config requires char_C, word_style_C and weights')
+        weights = np.asarray(config['weights'], dtype=float)
+        if weights.shape != (2,) or not np.isfinite(weights).all() or (weights < 0).any() or weights.sum() <= 0:
+            raise ValueError('Blend needs two finite nonnegative weights with positive sum')
+        return VotingClassifier(estimators=[
+            ('character', build_model({'kind': 'char_lr', 'C': config['char_C']}, seed=seed)),
+            ('word_style', build_model({'kind': 'word_style_lr', 'C': config['word_style_C']}, seed=seed))],
+            voting='soft', weights=weights.tolist(), n_jobs=1)
     allowed = {'kind', 'alpha'} if kind == 'word_nb' else {'kind', 'C'}
     if set(config) - allowed:
         raise ValueError(f'Unknown configuration keys: {sorted(set(config) - allowed)}')
