@@ -15,7 +15,7 @@ The Day 1 recommendation is an equal-weight soft blend of **character TF-IDF + l
 | Tune at least two approaches | Three C values for each LR representation; three alpha values for NB; complete grid and timings in `results/comparison.json` |
 | Five fixed-configuration learning sizes | 500/1,000/2,000/5,000/8,000; same character C=3 configuration and holdout; subset IDs and predictions saved |
 | Baseline/configuration/predictions | `configs/baseline.json` is word LR C=1; `results/selected_config.json` is the selected core character model; every run has ID-labeled probability TSVs |
-| Completed Q1/Q2 | `results/Q1_Q2.md`, `report/day1_sections.tex`, `output/pdf/day1-report.pdf`; integrated into the private workspace's root `report/main.tex` |
+| Completed Q1/Q2 | Exact original questions and filled answers/tables/plot are inline in the workspace's root `report/main.tex`; the single report PDF is root `report/output/pdf/course-report-day1.pdf`. |
 | Written handoff and next steps | This file, README, DATA_NOTES, HYPOTHESES and updated root TEAM_PLAN |
 
 ### Core comparison winners
@@ -59,7 +59,7 @@ source .venv/bin/activate
 export NLTK_DATA="$PWD/data/nltk_data"
 cd submissions/group-number-30
 python -m unittest discover -s tests -v
-python inspect_data.py --data ../../data --results results
+python inspect_data.py --data ../../data --results results_inspection
 ```
 
 To rerun the experiments while preserving the original evidence, use a fresh output directory:
@@ -69,12 +69,12 @@ mkdir -p results_reproduction
 cp results/split.json results_reproduction/split.json
 cp results/extension_plan.json results_reproduction/extension_plan.json
 python inspect_data.py --data ../../data --results results_reproduction
-python run_day1.py --data ../../data --results results_reproduction --bonus
-python run_extension.py --data ../../data --results results_reproduction
-python report_day1.py --results results_reproduction
+python run_day1.py --data ../../data --results results_reproduction --bonus --blend
 ```
 
-The report generator updates the team `report/` directory. The root course-template report contains a copied Day 1 section/figure; refresh those copies if replacing the measured report. Only team-directory files belong in the final course PR.
+Edit the one canonical report at root `report/main.tex`; Q1/Q2 are inline. To regenerate only its figure from this team directory, use `python run_day1.py --results results --plot-only --figure-out ../../report/images/learning_curve.pdf`, then compile the root report as documented in README. Duplicate report/output trees and prose-generating scripts were removed; the blend experiment is now `run_day1.py --blend` (or `--blend-only` for existing component results). Only team-directory code belongs in the course PR; the report is submitted separately.
+
+The compact `results/` keeps summaries, fixed split/configurations and `validation.predictions.tsv` for the recommended blend. `day1-evidence.zip` preserves all 65 original small result files, including every per-run prediction and learning subset ID, with a SHA256 manifest. README gives extraction commands. The consolidated `audit.json` includes the former source audit's additional sample-submission checks. Intermediate models and scratch files have a verified recovery archive outside the workspace; the actual full-data model, metadata and Kaggle CSV remain in `artifacts/`.
 
 The actual completed full-data commands were:
 
@@ -85,7 +85,7 @@ python predict.py --test ../../data/test.csv --sample-submission ../../data/samp
   --model artifacts/day1_recommended.joblib --out artifacts/submission_day1_recommended.csv
 ```
 
-Output paths are protected from overwrite; use new names for reruns. The sample's ID order is authoritative, and prediction verifies each ID and probability. For the simpler fallback, use `results/selected_config.json` with separate output paths. The trained validation fallback also exists locally at `results/runs/char_lr_C3.joblib`.
+Output paths are protected from overwrite; use new names for reruns. The sample's ID order is authoritative, and prediction verifies each ID and probability. For the simpler fallback, refit `results/selected_config.json` with separate output paths. Old validation model files were removed from the active workspace; their measured predictions remain in the evidence ZIP.
 
 For a fresh checkout, follow README: Python **3.12.14**, pinned `requirements.txt`, official Kaggle download in root `data/`, and the disclosed NLTK English tagger in `data/nltk_data`. Data, weights and credentials are excluded from Git. Small results, split IDs, aggregate audits, validation probabilities and plots are included. `results/software_verification.json` records the final clean-source reproduction check and output hash.
 
@@ -95,11 +95,11 @@ For a fresh checkout, follow README: Python **3.12.14**, pinned `requirements.tx
 - `70c8a61`: one adaptive blend plus stricter resume environment/artifact integrity checks. Blend and full-model artifacts use implementation SHA `9504096e81b9ee1a1119b6d131b2acffb75adb1d73c6d31847f468ccac53b049`.
 - The subsequent handoff commit adds measured results, report/PDF, verification evidence and final documentation. Consult `git log` for that final revision.
 
-Resume hardening did not change the original model fits. Old records intentionally cannot be reused with `--resume` under a different implementation hash. Use fresh output directories to reproduce them, or check out the original code revision. Core and extension code versions and artifacts are explicitly distinguished rather than pretending they came from one unchanged run.
+Resume hardening did not change the original model fits. Old records intentionally cannot be reused with `--resume` under a different implementation hash. Use fresh output directories to reproduce them. The compact evidence folder is not a resumable working directory; original models are excluded from its archive. Consolidating the experiment runner did not change the scoring implementation fingerprint. The user is reviewing local changes; do not commit or push without their approval.
 
 ## Next person's first steps
 
-1. Read `results/Q1_Q2.md` and `HYPOTHESES.md`; inspect the actual training examples/audit, and record your own verification for the AI disclosure.
+1. Read Q1/Q2 in root `report/main.tex` and team `HYPOTHESES.md`; inspect the training examples/audit, and record your own verification for the AI disclosure. Earlier report notes are retained in the evidence ZIP.
 2. Reproduce the recommended configuration on the **same split** using `python train.py --train ../../data/train.csv --config results/recommended_config.json --results results` (writes `results/verify/selected.*`), or a fresh directory with the copied split. Do not change the split to improve a score.
 3. **Day 2 remains Q3/Q5/Q6.1:** run a controlled unlabeled-data experiment without letting validation data enter feature fitting or pseudo-label training; review the existing structural/blend evidence, probabilistic-scoring cost and generalization; make the final model recommendation and write those sections. The extra Day 1 work supplies evidence for Q5 but does not replace Day 2's review.
 4. **Day 3 remains Q4/Q6.2/Q6.3 and assembly:** at least three length bins, five false positives and five false negatives with a stated threshold, human verification/disclosure, final report fields, course PR and Kaggle upload. Q0 and later report placeholders remain intentionally unfinished.

@@ -101,14 +101,20 @@ mkdir -p results_reproduction
 cp results/split.json results_reproduction/split.json
 cp results/extension_plan.json results_reproduction/extension_plan.json
 .venv/bin/python inspect_data.py --data ../../data --results results_reproduction
-.venv/bin/python run_day1.py --data ../../data --results results_reproduction --bonus
-.venv/bin/python run_extension.py --data ../../data --results results_reproduction
-.venv/bin/python report_day1.py --results results_reproduction
+.venv/bin/python run_day1.py --data ../../data --results results_reproduction --bonus --blend
 ```
 
-To reproduce only the required core comparison and learning curves, omit `--bonus` and skip `run_extension.py`. The extension requires the completed character and word/style component predictions, the copied `extension_plan.json`, and an audit. It reads `source_audit.json` when present, otherwise the freshly generated `audit.json`. `inspect_data.py` performs inspection without classifier training. Its optional `--preview-train 5` prints only examples from the training partition. The supplied files use `id`, `text` and `label`; no schema-override arguments are needed.
+To reproduce only the required core comparison and learning curves, omit `--bonus --blend`. The blend requires the copied `extension_plan.json`; it runs after its character and word/style components. To fit only the blend in an existing reproduction folder, use `--blend-only`. `inspect_data.py` performs inspection without classifier training; its optional `--preview-train 5` prints only training examples. The supplied files use `id`, `text` and `label`; no schema overrides are needed.
 
-The report command writes the selected result folder's `Q1_Q2.md` and learning-curve PNG/PDF, plus `report/main.tex`, `report/day1_sections.tex` and a copied figure. When extension results exist, the report includes the updated Day 1 recommendation while preserving the core comparison and learning curve. It regenerates that report directory from the chosen results folder. Compile `report/main.tex` with the included supporting files, using a LaTeX editor or Overleaf.
+There is one editable report: the workspace root's `report/main.tex`, with Q1/Q2 answered directly below the original questions. Its PDF is root `report/output/pdf/course-report-day1.pdf`; Q0 and later-day sections remain unfinished. Edit this LaTeX file directly. Report-generating prose scripts and the duplicate team report/output folders were removed. The course PR contains team code; the report is a separate deliverable.
+
+`run_day1.py` also produces the learning-curve PDF from the recorded fits. To refresh only the canonical report figure without training or changing prose, run:
+
+```bash
+.venv/bin/python run_day1.py --results results --plot-only --figure-out ../../report/images/learning_curve.pdf
+```
+
+Compile the root `report/main.tex` in a LaTeX editor, or from root `report/` run `pdflatex -interaction=nonstopmode -halt-on-error -jobname=course-report-day1 -output-directory=output/pdf main.tex` twice.
 
 Every controlled run uses seed **20261023**, the same balanced 8,000/2,000 split, and two numerical-library threads. Ordered split IDs and input hashes are persisted. Learned vocabulary, IDF and scaling use training data only. Learning curves use nested stratified subsets of 500, 1,000, 2,000, 5,000 and 8,000 training rows, refitting preprocessing at each size while keeping the selected hyperparameters fixed.
 
@@ -125,7 +131,7 @@ TF-IDF uses lowercase text, sublinear term frequency, smoothed IDF and L2 normal
 
 Optional fixed-C=1 ablations compare 28 measured style/POS features, POS 1–3 grams, class-conditional POS trigram surprise, and word TF-IDF combined with style features at fixed weights 1 and 0.1. The class-conditional feature model uses cross-fitted training features. It tests the handwritten sequence idea statistically; it is not a neural next-word model or a grammatical-error detector. Paired bootstrap comparisons use word logistic regression C=1 as the baseline. Their intervals are exploratory, conditional on fitted models, and do not account for training variability, model search, multiple comparisons or correlated sources.
 
-`--resume` is available for interrupted runs with matching recorded provenance. The original core, curve and bonus runs predate additional resume hardening and ensemble support, which changed the code fingerprint after commit `a4c2805`. Their original records intentionally fail `--resume` under the current code. Use the fresh-results workflow above to reproduce them; preserve the original measurements. Resume is an operational convenience, not an independent reproducibility experiment.
+`--resume` is available for interrupted reproduction runs with matching provenance and model files. The checked-in `results/` is a compact evidence set, not a resumable working directory. Original core, curve and bonus records predate resume hardening and ensemble support; their fingerprint intentionally differs from current scoring code. Use a fresh results folder to reproduce them. Resume is an operational convenience, not an independent reproducibility experiment.
 
 ## Verify the selected configuration
 
@@ -153,19 +159,28 @@ Prediction requires a saved full-data model, checks 3,000 unique template/test I
 | Path | Contents |
 | --- | --- |
 | `results/split.json` | Fixed ordered training/validation IDs, seed and input fingerprints |
-| `results/audit.json`, `results/source_audit.json` | Corpus integrity and source-overlap audit records |
+| `results/audit.json` | Consolidated corpus/source-overlap audit, including sample-submission schema and ID order |
 | `results/training_feature_audit.json` | Training-only evidence informing the structural hypotheses |
-| `results/search_plan.json` | Core candidate grid and selection rule |
-| `results/runs/*.json`, `*.predictions.tsv` | Each core run's metrics/provenance and validation ID, label, probability |
 | `results/comparison.json` | All ten core comparison records |
-| `results/selection.json`, `results/selected_config.json` | Recorded core winner and runnable configuration |
-| `results/learning_ids/`, `results/learning/`, `results/learning_curve.json` | Subset IDs, five fitted-run records, predictions and curve summary |
-| `results/bonus/`, `results/bonus_comparison.json` | Four completed ablations, predictions, failure list and paired bootstrap effects |
-| `results/extension_plan.json`, `results/extension/`, `results/extension_comparison.json` | Adaptive extension plan, measured equal-blend predictions and effect versus the core winner |
+| `results/selected_config.json` | Runnable core winner/fallback configuration |
+| `results/learning_curve.json` | All five learning-curve measurements |
+| `results/bonus_comparison.json` | Four ablations, failure list and paired bootstrap effects |
+| `results/extension_plan.json`, `results/extension_comparison.json` | Adaptive blend plan, measured result and effect versus the core winner |
 | `results/recommended_config.json` | Current Day 1 handoff recommendation, separately preserving the core selection |
-| `results/Q1_Q2.md`, `report/` | Generated measured Q1/Q2 answers, figures and editable LaTeX |
+| `results/validation.predictions.tsv` | Recommended blend's 2,000 validation IDs, labels and probabilities, ready for error analysis |
+| `results/day1-evidence.zip` | Complete original small evidence files: individual run records/predictions, subset IDs, plans, plots and earlier report notes; SHA256 manifest included |
 | `results/environment.json` | Measured Python, package, platform and thread settings |
-| `artifacts/`, local `*.joblib` | Regenerable trained models and local submission files; excluded from Git |
+| `artifacts/` | Retained full-data model, metadata and ready submission CSV; excluded from Git |
+
+To inspect archived details, extract them explicitly into a separate directory (paths inside the ZIP are relative to the original results folder):
+
+```bash
+python -m zipfile -e results/day1-evidence.zip /tmp/group30-day1-evidence
+cd /tmp/group30-day1-evidence
+shasum -a 256 -c MANIFEST.sha256
+```
+
+Use a new extraction directory if that path already exists. The archive contains no competition passages or model weights. Old intermediate models and scratch environments were removed from the workspace; the final full-data model and CSV remain in `artifacts/`. All removed working files also have a verified recovery snapshot beside the private workspace, `../kagglecomp-cleanup-backup-2026-11-05.tar.gz` relative to the repository root. This local backup is not needed to reproduce or submit the project.
 
 The final software check record is `results/software_verification.json`: 18 passing unit tests, clean-source reproduction, output hash, and PDF verification. Small configurations, aggregate metrics, validation-ID probability tables, split IDs and report sources belong in the handoff. Competition CSVs, credentials, model weights, caches and temporary software-test fixtures do not belong in the public course PR. No passage text is needed in the validation prediction tables. Saved model files use joblib and are intended to be regenerated from the pinned code and dependencies.
 

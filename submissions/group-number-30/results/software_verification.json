@@ -71,10 +71,34 @@
     }
   },
   "reports": {
-    "day1_pdf": "output/pdf/day1-report.pdf",
-    "pages": 4,
-    "visual_review": "All four rendered pages inspected; tables, text and figure legible with no clipping",
-    "team_latex": "Compiled with pdflatex",
-    "integrated_course_template": "Compiled successfully with Codex built-in compiler; later-day fields remain placeholders"
+    "course_template_from_team_directory": "../../report/main.tex",
+    "course_template_pdf_from_team_directory": "../../report/output/pdf/course-report-day1.pdf",
+    "course_template_pages": 10,
+    "course_template_q1_q2_pages": [
+      4,
+      5,
+      6
+    ],
+    "verification": "Original prompts preserved and filled inline; PDF previously rendered and visually checked; source, figure and PDF bytes unchanged by cleanup. Canonical project compiled successfully again after duplicate removal.",
+    "duplicate_standalone_report": "Removed from active workspace; original report/prose and prior verification preserved in recovery backup and small evidence archive respectively."
+  },
+  "cleanup_verification": {
+    "evidence_files_verified": 65,
+    "unit_tests": 18,
+    "merged_blend_auroc": 0.978162,
+    "recommendation_unchanged": true,
+    "bootstrap_unchanged": true,
+    "submission_rows": 3000,
+    "submission_byte_identical": true,
+    "date": "2026-11-05",
+    "validation_predictions_byte_identical": true,
+    "archive": "results/day1-evidence.zip",
+    "archive_sha256": "5c0a0e45747c5ea4b46c8fc806898a3c78399b4487b8e1a0f645bd969cba8305",
+    "recovery_archive_from_repository_root": "../kagglecomp-cleanup-backup-2026-11-05.tar.gz",
+    "recovery_files_verified": 13685,
+    "report_and_final_model_files_unchanged": true,
+    "scoring_implementation_unchanged": true,
+    "working_files_removed": 13641,
+    "visible_result_files": 14
   }
 }

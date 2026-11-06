@@ -1,4 +1,4 @@
-"""Run actual-data audit, ten core candidates, five learning sizes and optional structural ablations."""
+"""Reproduce Day 1 experiments, optional structural/blend tests, or the saved learning curve."""
 from __future__ import annotations
 
 import argparse
@@ -7,6 +7,7 @@ import os
 import platform
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from data_utils import audit_data, get_or_create_split, load_data, nested_stratified_subsets
@@ -20,14 +21,126 @@ def candidate_name(config):
     return f'{config["kind"]}_{key}{value}'
 
 
+def plot_learning_curve(results, figure_out=None):
+    """Plot recorded measurements without changing results or report prose."""
+    results = Path(results)
+    curves = sorted(json.loads((results / 'learning_curve.json').read_text()), key=lambda row: row['train_rows'])
+    if [row['train_rows'] for row in curves] != [500, 1000, 2000, 5000, 8000]:
+        raise ValueError('Expected exactly the five required learning-curve sizes')
+    reference = curves[0]
+    for row in curves:
+        if row['validation_rows'] != 2000:
+            raise ValueError('Learning curve must use the fixed 2,000-row holdout')
+        for key in ('config', 'seed', 'source_sha256', 'validation_ids_sha256'):
+            if not row.get(key) or row[key] != reference[key]:
+                raise ValueError(f'Learning-curve provenance differs or is missing: {key}')
+        for key in ('train_auroc', 'validation_auroc'):
+            if not np.isfinite(row[key]) or not 0 <= row[key] <= 1:
+                raise ValueError(f'Invalid recorded {key}')
+    target = Path(figure_out) if figure_out is not None else results / 'learning_curve.pdf'
+    if target.suffix.lower() not in {'.pdf', '.png'}:
+        raise ValueError('Learning-curve output must be .pdf or .png')
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(figsize=(7.3, 4.3), layout='constrained')
+    for key, label, color in [('train_auroc', 'Training', '#3556a4'),
+                              ('validation_auroc', 'Validation', '#12806c')]:
+        ax.plot([row['train_rows'] for row in curves], [row[key] for row in curves],
+                marker='o', label=label, color=color)
+    config = reference['config']
+    setting = ', '.join(f'{key}={value}' for key, value in config.items() if key != 'kind')
+    ax.set(xlabel='Labeled training rows', ylabel='AUROC',
+           title=f'Fixed configuration: {config["kind"]}, {setting}', ylim=(.45, 1.015))
+    ax.set_xticks([500, 1000, 2000, 5000, 8000], ['500', '1,000', '2,000', '5,000', '8,000'])
+    ax.legend()
+    ax.grid(alpha=.2)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(target, dpi=180)
+    plt.close(fig)
+    print(f'Learning curve written to {target}', flush=True)
+    return target
+
+
+def blend_plan(results):
+    plan = json.loads((Path(results) / 'extension_plan.json').read_text())
+    if plan['config'] != {'kind': 'char_style_blend', 'char_C': 3.0,
+                           'word_style_C': 1.0, 'weights': [.5, .5]}:
+        raise ValueError('This experiment is the one predeclared equal-weight blend')
+    if not plan.get('promotion_rule'):
+        raise ValueError('The blend plan must record its promotion rule before evaluation')
+    return plan
+
+
+def run_blend(data_dir, results, *, resume=False):
+    """Run the formerly separate extension using the same recorded selection rule."""
+    out = Path(results)
+    plan = blend_plan(out)
+    config = plan['config']
+    data = load_data(Path(data_dir) / 'train.csv', expected_rows=10000)
+    train, validation = get_or_create_split(data, out / 'split.json')
+    audit_path = out / 'source_audit.json'
+    if not audit_path.exists():
+        audit_path = out / 'audit.json'
+    audit = json.loads(audit_path.read_text())
+    base = pd.read_csv(out / 'runs' / 'char_lr_C3.predictions.tsv', sep='\t', dtype={'id': str})
+    style = pd.read_csv(out / 'bonus' / 'word_style_lr.predictions.tsv', sep='\t', dtype={'id': str})
+    expected_ids = validation.id.astype(str).tolist()
+    expected_labels = validation.label.tolist()
+    for component in (base, style):
+        if component.id.tolist() != expected_ids or component.label.tolist() != expected_labels:
+            raise ValueError('Blend component predictions do not match the fixed validation IDs and labels')
+    record = evaluate(config, train, validation, out / 'extension', 'equal_blend',
+                      save_model=True, resume=resume,
+                      sensitivity_exclude_ids=audit['source_overlap_sensitivity']['excluded_validation_ids'])
+    blend = pd.read_csv(out / 'extension' / 'equal_blend.predictions.tsv', sep='\t', dtype={'id': str})
+    if blend.id.tolist() != expected_ids or blend.label.tolist() != expected_labels:
+        raise ValueError('Blend predictions do not match the fixed validation IDs and labels')
+    expected = (base.probability_ai.to_numpy() + style.probability_ai.to_numpy()) / 2
+    if not np.allclose(expected, blend.probability_ai, rtol=0, atol=1e-8):
+        raise ValueError('Refitted blend does not match fixed component average')
+    effect = paired_bootstrap(base.label, base.probability_ai, blend.probability_ai)
+    promote = effect['delta_auroc'] > 0 and effect['ci_95_percentile'][0] > 0
+    recommended = config if promote else {'kind': 'char_lr', 'C': 3.0}
+    write_json(out / 'extension_comparison.json', {
+        'run': record, 'baseline_name': 'char_lr_C3', 'effect_vs_core': effect,
+        'promoted_for_day1_handoff': promote, 'recommended_config': recommended,
+        'selection_rule': plan['promotion_rule'],
+        'component_prediction_max_abs_difference': float(np.max(np.abs(expected - blend.probability_ai))),
+        'caution': 'Adaptive exploratory extension selected after earlier comparisons; bootstrap is not confirmatory. Day 2 should review generalization and complexity.'})
+    write_json(out / 'recommended_config.json', recommended)
+    print(json.dumps({'recommended': recommended, 'effect': effect, 'promote': promote}), flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--data', type=Path, required=True)
+    parser.add_argument('--data', type=Path, help='Competition data directory; required for fitting')
     parser.add_argument('--results', type=Path, default=Path('results'))
     parser.add_argument('--bonus', action='store_true', help='Four prespecified style/POS ablations after core experiments')
+    parser.add_argument('--blend', action='store_true', help='Run the declared equal blend after --bonus; needs extension_plan.json')
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('--blend-only', action='store_true', help='Fit the blend using existing core/bonus predictions and extension_plan.json')
+    modes.add_argument('--plot-only', action='store_true', help='Plot saved learning_curve.json without training or rewriting report prose')
+    parser.add_argument('--figure-out', type=Path, help='PDF/PNG plot path; default: RESULTS/learning_curve.pdf')
     parser.add_argument('--resume', action='store_true', help='Verify and reuse completed runs with identical data/configuration')
     args = parser.parse_args()
     out = args.results
+    if args.plot_only:
+        if args.bonus or args.blend or args.resume:
+            parser.error('--plot-only cannot be combined with --bonus, --blend or --resume')
+        plot_learning_curve(out, args.figure_out)
+        return
+    if args.data is None:
+        parser.error('--data is required for fitting')
+    if args.blend_only:
+        if args.bonus or args.blend or args.figure_out:
+            parser.error('--blend-only cannot be combined with --bonus, --blend or --figure-out')
+        run_blend(args.data, out, resume=args.resume)
+        return
+    if args.blend:
+        if not args.bonus:
+            parser.error('--blend requires --bonus; use --blend-only for existing component predictions')
+        blend_plan(out)  # Reject a missing or changed plan before starting the core fits.
     if not args.resume and (out / 'comparison.json').exists():
         parser.error('Comparison results already exist; choose a new results directory or --resume')
     data = load_data(args.data / 'train.csv', expected_rows=10000)
@@ -76,6 +189,7 @@ def main():
         curves.append(evaluate(best['config'], subset, validation, out / 'learning', f'n{size}',
                                resume=args.resume, sensitivity_exclude_ids=sensitivity))
     write_json(out / 'learning_curve.json', curves)
+    plot_learning_curve(out, args.figure_out)
     if args.bonus:
         configs = [{'kind': kind, 'C': 1.} for kind in ('style_lr', 'pos_lr', 'surprisal_lr', 'word_style_lr')]
         write_json(out / 'bonus_plan.json', {'candidates': configs, 'baseline': {'kind': 'word_lr', 'C': 1.},
@@ -100,8 +214,10 @@ def main():
                 raise ValueError('Bonus bootstrap inputs are not paired by identical IDs and labels')
             effects[run['name']] = paired_bootstrap(baseline.label, baseline.probability_ai, prediction.probability_ai)
         write_json(out / 'bonus_comparison.json', {'runs': bonus_runs, 'failures': failures, 'effects_vs_word_C1': effects})
+    if args.blend:
+        run_blend(args.data, out, resume=args.resume)
     print(f'Day 1 measured records written to {out}; selected {best["name"]} AUROC={best["validation_auroc"]:.6f}', flush=True)
-    print('Generate the reviewed Q1/Q2 report from these records with the separate report command.', flush=True)
+    print('Review these measurements and edit the existing course report; this script does not rewrite prose.', flush=True)
 
 
 if __name__ == '__main__':

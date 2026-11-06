@@ -44,9 +44,9 @@ The audit records this explicitly. No claim of a completely unseen holdout is ma
 
 ## What was implemented
 
-All four bonus configurations were recorded in
-[bonus_plan.json](results/bonus_plan.json), used logistic regression with `C=1`,
-and reused the same 8,000/2,000 split. Bonus hyperparameters were not searched.
+All four bonus configurations used logistic regression with `C=1` and reused
+the same 8,000/2,000 split. Their original `bonus_plan.json` is preserved in
+[day1-evidence.zip](results/day1-evidence.zip). Bonus hyperparameters were not searched.
 Each learned vectorizer, scaler, or conditional model was fitted on training
 rows only. The models and features are in [models.py](models.py) and
 [structure.py](structure.py).
@@ -80,9 +80,15 @@ explicit error. No external LLM was used to label or predict these passages.
 
 [bonus_comparison.json](results/bonus_comparison.json) contains metrics,
 configuration and input hashes, timings, warnings, sensitivity scores, and
-paired intervals. Predictions are retained under [results/bonus](results/bonus).
+paired intervals. The original per-run records and predictions from `bonus/`
+are retained in [day1-evidence.zip](results/day1-evidence.zip), together with
+the other detailed run records and subset IDs. Original relative paths are
+preserved and `MANIFEST.sha256` records file checksums. See the [README](README.md)
+for extraction instructions.
 The baseline and best core configuration come from
-[comparison.json](results/comparison.json) and [selection.json](results/selection.json).
+[comparison.json](results/comparison.json) and
+[selected_config.json](results/selected_config.json); the original `selection.json`
+is also preserved in the evidence archive.
 
 | Model | Train AUROC | Validation AUROC | Change versus word C=1 | Paired 95% interval for change |
 | --- | ---: | ---: | ---: | --- |
@@ -180,6 +186,8 @@ the declared handoff rule: recommend the blend only if AUROC increased and the
 interval's lower bound exceeded zero. The blend is therefore the **Day 1
 recommendation**, with character LR C=3 retained as the simpler core fallback.
 This preserves the original core selection and four-candidate bonus record.
+The recommended blend's validation IDs, labels and probabilities remain directly
+available in [validation.predictions.tsv](results/validation.predictions.tsv).
 
 The result supports complementary ranking information from the two component
 models on this holdout. It does not isolate which style feature matters or

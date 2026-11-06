@@ -429,5 +429,14 @@
       "1": 1000
     },
     "exact_labeled_subset": true
+  },
+  "sample_submission": {
+    "rows": 3000,
+    "columns": [
+      "id",
+      "label"
+    ],
+    "source_sha256": "2fdb037826ae4a83136c393fa9d29fd74d899b2dd06d32caadbe3a56e356193d",
+    "columns_and_test_id_order_match": true
   }
 }
