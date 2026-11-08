@@ -145,3 +145,5 @@ loads it to verify training scope/count, and only then publishes the final model
 path. Two fixture tests cover success and an intentionally incomplete write.
 A separate sequential full-data refit is checked against the original predictions;
 its result is recorded in `results/day3/verification.json`.
+
+Final sequential full-data reproduction succeeded: 3,000 IDs match and maximum probability difference is 0.0; the two CSVs are byte-identical. Twenty tests passed.
