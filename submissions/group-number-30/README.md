@@ -1,12 +1,68 @@
 # Group Number 30 — Human or AI?
 
+## Day 3 review status (2026-11-08)
+
+The current integrated review branch is `day3-validation-report`, based on Day 2
+PR #1. See [Day 3 PR #2](https://github.com/Divyesh-Thirukonda/kagglecomp/pull/2)
+and [DAY3_HANDOFF.md](DAY3_HANDOFF.md) for the current results and pending actions.
+The historical Day 1 sections below are retained for provenance, not overwritten.
+
+- Exact ordered Day 1/Day 2 split IDs and CSV hashes match.
+- Independently refitted 28-feature blend: train AUROC 0.998926, validation
+  AUROC 0.978174. Saved Day 1 score was 0.978162; probabilities are not identical.
+- At threshold 0.5: TN=961, FP=39, FN=111, TP=889. Three fixed length-bin scores
+  and ten case analyses are in `results/day3/`.
+- Day 2 compact-style blend is an 11-feature implementation, distinct from the
+  selected 28-feature POS blend. Its pseudo-label result remains negative.
+- The actually executed Day 3 environment is pinned in `requirements-day3.txt`.
+  This supplements rather than silently changes the original environment record.
+- The assembled report source is now **team-local**: `report/main.tex`, with the
+  review PDF at `report/output/pdf/Group30_Report_Day3.pdf`. It includes Q0-Q6;
+  online scores/course PR and independent human-review fields remain explicit.
+- Full-data predictions were generated locally and checked for 3,000 test IDs.
+  No actual Kaggle upload or course-portal upload is claimed.
+
+### Reproduce Day 3 from a fresh checkout
+
+From this team directory (Python 3.12.14):
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-day3.txt
+.venv/bin/python -m nltk.downloader -d ../../data/nltk_data averaged_perceptron_tagger_eng
+export NLTK_DATA="$PWD/../../data/nltk_data"
+.venv/bin/python -m unittest discover -s tests -v
+mkdir -p artifacts/day3_refit
+cp results/split.json artifacts/day3_refit/split.json
+.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --results artifacts/day3_refit
+.venv/bin/python analyze_day3.py --train ../../data/train.csv --predictions artifacts/day3_refit/verify/selected.predictions.tsv --out artifacts/day3_refit/analysis
+.venv/bin/python run_day2.py --data ../../data --out artifacts/day3_refit/day2_replay
+.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --full-data --model-out artifacts/day3_final.joblib
+.venv/bin/python predict.py --test ../../data/test.csv --sample-submission ../../data/sample_submission.csv --model artifacts/day3_final.joblib --out artifacts/submission_day3.csv
+```
+
+Choose new output paths for repeated runs: scripts deliberately preserve prior
+measurements. The command sequence uses the saved split and performs a fresh
+fit, not a cached-model resume. Raw text, credentials and model weights are not
+committed. Error tables contain IDs, probabilities and short observations only.
+
+### AI assistance and human review
+
+Day 3 code, execution, error-case interpretation and report integration were
+assisted by Codex/ChatGPT. Programmatic checks are documented, but do not establish
+that a teammate independently verified each result. Review [DAY3_REVIEW_GUIDE.md](DAY3_REVIEW_GUIDE.md),
+confirm each member's actual contribution/verification, and update Q6.3 before
+submission. No external LLM API predicts test passages; no hidden labels were
+retrieved. A workspace PR does not replace the required public course PR.
+
+
 Cornell Tech CS 5785, Fall 2026. Required course team name: **Group Number 30**. Actual Kaggle team settings were not changed in this session.
 
 | Team member | NetID | Contribution record |
 | --- | --- | --- |
 | Divyesh Thirukonda Gowri Shankar | dt579 | Requested and directed the Day 1 investigation; supplied structural hypotheses and required a restart based on the actual competition data. |
-| Anusha Ramachandrareddy | To be confirmed | Day 2/3 ownership and work performed must be recorded by the team. |
-| Shenye Wang | To be confirmed | Day 2/3 ownership and work performed must be recorded by the team. |
+| Anusha Ramachandrareddy | ar2664 | Day 2 notebook, pseudo-labeling and compact blend experiments (PR #1). |
+| Shenye Wang | sw2486 | Day 3 analysis/integration with AI assistance; independent human review pending. |
 
 The course assignment sheet confirms these members. Do not treat pending contribution descriptions as work already performed. The course-repository PR URL is still pending.
 

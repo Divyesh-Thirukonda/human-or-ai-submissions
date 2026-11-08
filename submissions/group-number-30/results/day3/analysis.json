@@ -45,7 +45,7 @@
   ],
   "case_selection": "Five highest-P(AI) false positives and five lowest-P(AI) false negatives; illustrative, not representative.",
   "source_sha256": "325e345faf88fb1c4203278098c282e40319a87b4bf17e094d2f235f51d0c07e",
-  "split_sha256": "c349a91736310f62009f73f09aff96a68bfeda6f11d8fd69f110cc2af25a354b",
+  "split_sha256": "baf1c089caad1f2ed43a2a2b4c3786fc7021fe71244e1ba0b0b1a994b19e1336",
   "predictions_sha256": "b850200b2cd1662f26ff3c8d5d0bdccd19567c71523e3e72ea69e5e959de6dd2",
   "day2_split_audit": {
     "training_ids_identical_order": true,

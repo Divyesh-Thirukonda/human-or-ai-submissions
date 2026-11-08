@@ -36,7 +36,14 @@ def main():
             model.fit(data.text.tolist(), data.label.to_numpy())
             seconds = time.perf_counter() - start
         args.model_out.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(artifact(model, config, data, fit_scope='all_labeled', seed=SEED), args.model_out, compress=3)
+        # Verify serialization before exposing a completed model path. A successful
+        # fit is insufficient if an interrupted/short write leaves an unreadable file.
+        temporary = args.model_out.with_name(args.model_out.name + '.tmp')
+        joblib.dump(artifact(model, config, data, fit_scope='all_labeled', seed=SEED), temporary, compress=3)
+        restored = joblib.load(temporary)
+        if restored['fit_scope'] != 'all_labeled' or restored['train_rows'] != len(data):
+            raise RuntimeError('Serialized model failed training-scope verification')
+        temporary.replace(args.model_out)
         write_json(args.model_out.with_suffix('.metadata.json'), {
             'config': config, 'seed': SEED, 'train_rows': len(data), 'source_sha256': data.attrs['source_sha256'],
             'fit_scope': 'all_labeled', 'fit_seconds': seconds,
