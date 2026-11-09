@@ -66,5 +66,18 @@
     "public_auroc": 0.91312,
     "selected_for_final_score": true
   },
-  "course_pr": "https://github.com/sekhari/human-or-ai-submissions/pull/4"
+  "course_pr": "https://github.com/sekhari/human-or-ai-submissions/pull/4",
+  "gradescope": {
+    "course_id": 1402161,
+    "assignment_id": 8956862,
+    "submission_id": 446515197,
+    "status": "submitted_ungraded",
+    "members": [
+      "dt579",
+      "ar2664",
+      "sw2486"
+    ],
+    "question_page_assignments_verified": 21,
+    "report_course_pr": 4
+  }
 }
