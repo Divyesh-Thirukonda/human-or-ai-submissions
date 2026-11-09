@@ -1,5 +1,7 @@
 # Group 30 — Day 2 Results & Handoff (Q3, Q5, Q6)
 
+> Historical daily record. Pending tasks, branch names and report paths below describe that day. For the completed submission and current report, use [README.md](README.md) and [FINAL_HANDOFF.md](FINAL_HANDOFF.md).
+
 ## Executive summary
 Q3 pseudo-labeling selected 95/3,000 unlabeled passages (12 predicted human, 83 AI) and did not improve validation AUROC: 0.970763 vs 0.970822. Q5's 50/50 character + word/style blend reached AUROC 0.971276 (+0.000454) but log loss worsened to 0.329447 from 0.281667. This is a marginal ranking gain, not an unambiguous improvement.
 

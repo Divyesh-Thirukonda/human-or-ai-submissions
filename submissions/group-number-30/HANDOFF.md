@@ -1,5 +1,7 @@
 # Day 1 handoff — November 5, 2026
 
+> Historical daily record. Pending tasks, branch names and report paths below describe that day. For the completed submission and current report, use [README.md](README.md) and [FINAL_HANDOFF.md](FINAL_HANDOFF.md).
+
 ## Completed outcome
 
 **Day 1 experimental and report work is complete on the actual supplied CSVs.** The user intentionally removed the initial provisional implementation; the code and conclusions here were rebuilt after inspecting the real data. No synthetic fixture score is used as competition evidence.

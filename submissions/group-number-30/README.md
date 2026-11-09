@@ -1,39 +1,46 @@
 # Group Number 30 — Human or AI?
 
-## Final submission — November 9, 2026
+Cornell Tech CS 5785, Fall 2026. All three days are integrated and submitted.
 
-Course PR: https://github.com/sekhari/human-or-ai-submissions/pull/4
+- **Course submission:** [PR #4](https://github.com/sekhari/human-or-ai-submissions/pull/4), from the course fork's `main` to the original course repository's `main`.
+- **Final report:** [PDF](report/output/pdf/Group30_Final_Report.pdf) · [LaTeX source](report/main.tex). This is the only current report.
+- **Gradescope:** final 12-page PDF submitted November 9, 2026, with all three members and all 21 question assignments verified.
+- **Kaggle:** team **Group Number 30**, public AUROC **0.91312**, submission selected for final scoring. Private AUROC is not yet revealed.
+- **Verification:** [final run record](results/final_verification.json) · [submission handoff](FINAL_HANDOFF.md). Twenty unit tests passed during final assembly.
 
-All three days are integrated. Final local validation AUROC is **0.978162**; Kaggle public AUROC is **0.91312**, submitted and selected for final scoring. Private AUROC is not yet revealed. The 3,000 final test probabilities match Day 1 exactly; Day 3's separate refit/analysis remains recorded at 0.978174. See `results/final_verification.json` and `FINAL_HANDOFF.md`.
+## Team and ownership
 
-The canonical final report is `report/main.tex`, compiled to `report/output/pdf/Group30_Final_Report.pdf`. The following Day 3 commands reproduce the selected configuration; for the final filenames use `artifacts/final_submission.joblib` and `artifacts/submission.csv`. Earlier sections and handoffs preserve their original dates and status.
+| Member | NetID | Work |
+| --- | --- | --- |
+| Divyesh Thirukonda Gowri Shankar | dt579 | Day 1: model comparison, learning curves and structural hypotheses |
+| Anusha Ramachandrareddy | ar2664 | Day 2: pseudo-labeling and compact blend experiments |
+| Shenye Wang | sw2486 | Day 3: subgroup/error analysis and report integration |
 
+## Final model and measured results
 
-## Day 3 review status (2026-11-08)
+The final model averages character TF-IDF logistic regression (C=3) and word TF-IDF plus 28 style/POS features logistic regression (C=1), with weights 0.5/0.5. Its runnable configuration is [results/recommended_config.json](results/recommended_config.json). Character-only C=3 in `results/selected_config.json` is the fallback and learning-curve configuration.
 
-The current integrated review branch is `day3-validation-report`, based on Day 2
-PR #1. See [Day 3 PR #2](https://github.com/Divyesh-Thirukonda/kagglecomp/pull/2)
-and [DAY3_HANDOFF.md](DAY3_HANDOFF.md) for the current results and pending actions.
-The historical Day 1 sections below are retained for provenance, not overwritten.
+Final reproduced validation AUROC is **0.978162** on the fixed 2,000-row holdout. The separate Day 3 refit/analysis recorded **0.978174**; its predictions are not identical. Final test probabilities match Day 1 exactly. Local validation and Kaggle public scores use different datasets and are not interchangeable. The validation split was reused for model selection, so its score is not an independent test estimate.
 
-- Exact ordered Day 1/Day 2 split IDs and CSV hashes match.
-- Independently refitted 28-feature blend: train AUROC 0.998926, validation
-  AUROC 0.978174. Saved Day 1 score was 0.978162; probabilities are not identical.
-- At threshold 0.5: TN=961, FP=39, FN=111, TP=889. Three fixed length-bin scores
-  and ten case analyses are in `results/day3/`.
-- Day 2 compact-style blend is an 11-feature implementation, distinct from the
-  selected 28-feature POS blend. Its pseudo-label result remains negative.
-- The actually executed Day 3 environment is pinned in `requirements-day3.txt`.
-  This supplements rather than silently changes the original environment record.
-- The assembled report source is now **team-local**: `report/main.tex`, with the
-  review PDF at `report/output/pdf/Group30_Report_Day3.pdf`. It includes Q0-Q6;
-  online scores/course PR and independent human-review fields remain explicit.
-- Full-data predictions were generated locally and checked for 3,000 test IDs.
-  No actual Kaggle upload or course-portal upload is claimed.
+Day 2's 11-feature compact blend is distinct from the selected 28-feature blend. Its pseudo-label experiment did not improve validation AUROC. Detailed comparisons, length-bin analysis and ten error cases are in the final report and recorded evidence.
 
-### Reproduce Day 3 from a fresh checkout
+## Data and environment
 
-From this team directory (Python 3.12.14):
+Download the official files from the [Kaggle Data tab](https://www.kaggle.com/competitions/cornell-tech-cs-5785-combined-2026-ai-vs-human-text/data) with your authorized account. Put them in the repository-root `data/` directory:
+
+```text
+data/train.csv                 10,000 rows: id,text,label
+data/unlabeled.csv              3,000 rows: id,text
+data/test.csv                   3,000 rows: id,text
+data/sample_submission.csv      3,000 rows: id,label
+data/train_starter_2000.csv      2,000-row subset of train.csv
+```
+
+Label 0 means human; label 1 means AI. Predictions are probabilities of AI authorship. The starter subset is not extra training data. Dataset files, credentials and fitted weights are excluded from Git. See [DATA_NOTES.md](DATA_NOTES.md) for the data audit and limitations.
+
+Use **Python 3.12.14** and **requirements-day3.txt** for the final reproduction environment. `requirements.txt` and `results/environment.json` preserve the earlier Day 1 environment record; they are not the final setup instructions. No GPU or external LLM prediction service is needed.
+
+From `submissions/group-number-30/`:
 
 ```bash
 python3.12 -m venv .venv
@@ -41,143 +48,41 @@ python3.12 -m venv .venv
 .venv/bin/python -m nltk.downloader -d ../../data/nltk_data averaged_perceptron_tagger_eng
 export NLTK_DATA="$PWD/../../data/nltk_data"
 .venv/bin/python -m unittest discover -s tests -v
-mkdir -p artifacts/day3_refit
-cp results/split.json artifacts/day3_refit/split.json
-.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --results artifacts/day3_refit
-.venv/bin/python analyze_day3.py --train ../../data/train.csv --predictions artifacts/day3_refit/verify/selected.predictions.tsv --out artifacts/day3_refit/analysis
-.venv/bin/python run_day2.py --data ../../data --out artifacts/day3_refit/day2_replay
-.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --full-data --model-out artifacts/day3_final.joblib
-.venv/bin/python predict.py --test ../../data/test.csv --sample-submission ../../data/sample_submission.csv --model artifacts/day3_final.joblib --out artifacts/submission_day3.csv
 ```
 
-Choose new output paths for repeated runs: scripts deliberately preserve prior
-measurements. The command sequence uses the saved split and performs a fresh
-fit, not a cached-model resume. Raw text, credentials and model weights are not
-committed. Error tables contain IDs, probabilities and short observations only.
+The pretrained English POS tagger annotates syntax; it does not supply authorship labels. Its recorded hash and package versions are in `results/final_verification.json`.
 
-### AI assistance and human review
+## Reproduce evaluation and generate submission.csv
 
-Day 3 code, execution, error-case interpretation and report integration were
-assisted by Codex/ChatGPT. Programmatic checks are documented, but do not establish
-that a teammate independently verified each result. The team confirms day ownership: Divyesh Day 1, Anusha Day 2, Shenye Day 3. Q6.3 distinguishes this involvement from AI-assisted execution. No external LLM API predicts test passages; no hidden labels were
-retrieved. A workspace PR does not replace the required public course PR.
-
-
-Cornell Tech CS 5785, Fall 2026. Required course team name: **Group Number 30**. Actual Kaggle team settings were not changed in this session.
-
-| Team member | NetID | Contribution record |
-| --- | --- | --- |
-| Divyesh Thirukonda Gowri Shankar | dt579 | Requested and directed the Day 1 investigation; supplied structural hypotheses and required a restart based on the actual competition data. |
-| Anusha Ramachandrareddy | ar2664 | Day 2 notebook, pseudo-labeling and compact blend experiments (PR #1). |
-| Shenye Wang | sw2486 | Day 3 analysis/integration with AI assistance; independent human review pending. |
-
-The course assignment sheet confirms these members. Do not treat pending contribution descriptions as work already performed. The course-repository PR URL is recorded in FINAL_HANDOFF.md.
-
-## Current measured status
-
-The actual-data run has completed ten core candidates across four approaches, tuning three approaches, and all five required learning-curve sizes. The core winner is **character TF-IDF + logistic regression, C=3**:
-
-| Metric | Measured value |
-| --- | ---: |
-| Training AUROC, 8,000 rows | 0.99914756 |
-| Validation AUROC, fixed 2,000 rows | 0.97075600 |
-| Source-overlap sensitivity AUROC, 1,992 retained rows | 0.97062737 |
-| Validation log loss | 0.28173870 |
-| Fit time on the recorded machine | 9.00 seconds |
-
-All four fixed structural ablations completed successfully:
-
-| Structural approach, C=1 | Validation AUROC |
-| --- | ---: |
-| Style/POS features | 0.906037 |
-| POS n-grams | 0.947155 |
-| Class-conditional POS trigram surprise | 0.926211 |
-| Word TF-IDF + style/POS features | 0.955052 |
-
-After these comparisons, one adaptive extension tested an **equal probability average of character LR C=3 and word/style LR C=1**. It is the current Day 1 handoff recommendation, saved in `results/recommended_config.json`; the core winner remains in `results/selected_config.json` as the fallback and the configuration used for the required learning curve.
-
-| Recommended equal blend | Measured value |
-| --- | ---: |
-| Training AUROC | 0.998927125 |
-| Validation AUROC, 2,000 rows | 0.978162 |
-| Improvement over character LR C=3 | +0.007406 |
-| Exploratory paired 95% interval for improvement | [+0.00395085, +0.011163475] |
-| Source-overlap sensitivity AUROC, 1,992 rows | 0.978040588 |
-| Validation log loss | 0.297826494 |
-| Fit time on the recorded machine | 40.54 seconds |
-
-The blend improved the competition's ranking metric, but its log loss was worse than the core character model's 0.281739 and it costs more to fit. Its selection rule was recorded before this extension ran, **after** seeing earlier comparisons; this is an adaptive exploratory result, not a wholly prespecified confirmatory test. The 1,000-resample paired interval conditions on the fitted models and does not correct for adaptive selection or correlated sources. The holdout is used for tuning, so none of these values is an independent test estimate or a Kaggle leaderboard score.
-
-Full-data refitting and competition-test prediction are complete. A clean source export and freshly installed pinned environment reproduced all 3,000 probabilities exactly (maximum difference 0). See `results/software_verification.json`. No online Kaggle submission has been made.
-
-## Data access and observed contract
-
-Download the official files from the [competition Data tab](https://www.kaggle.com/competitions/cornell-tech-cs-5785-combined-2026-ai-vs-human-text/data), using your own authorized Kaggle account. Place them in the repository-root `data/` directory, which is `../../data` when working in this team folder:
-
-```text
-data/train.csv                 10,000 rows, id,text,label
-data/unlabeled.csv              3,000 rows, id,text
-data/test.csv                   3,000 rows, id,text
-data/sample_submission.csv      3,000 rows, id,label
-data/train_starter_2000.csv      2,000 rows, id,text,label
-```
-
-`label=0` means human and `label=1` means AI. Submission values must be probabilities of AI authorship, in columns **`id,label`**. The sample's 0.5 values are placeholders. The starter file exactly repeats 2,000 training rows; it is not additional data. The unlabeled file is inspected for integrity on Day 1 but is not used to fit the supervised baselines.
-
-Actual training passages contain 75–350 whitespace words. No exact duplicate passages were found, but moderate lexical overlap and shared openings can reflect related templates. [DATA_NOTES.md](DATA_NOTES.md) records the diligence, relevant limitations, and exploratory training-only feature findings. `results/audit.json` records file hashes and overlap counts. The source-overlap sensitivity diagnostic excludes eight validation IDs sharing either a normalized 80-character opening or word-trigram Jaccard similarity at least 0.50 with a training row; it does not determine model selection.
-
-## Environment
-
-The measured run used **Python 3.12.14**. `requirements.txt` pins the installed dependency versions, including scikit-learn 1.9.1, NumPy 2.5.4, pandas 3.1.1 and NLTK 3.10.4. The recorded machine and package versions are in `results/environment.json`. No GPU or external LLM prediction service is required.
-
-For a portable checkout, start in this team directory:
+Run from the same team directory with the environment above. Use fresh output paths: scripts deliberately preserve existing measurements and artifacts.
 
 ```bash
-python3.12 --version  # use Python 3.12.14
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m nltk.downloader -d ../../data/nltk_data averaged_perceptron_tagger_eng
-export NLTK_DATA="$(cd ../../data/nltk_data && pwd)"
-.venv/bin/python -m unittest discover -s tests -v
+mkdir -p artifacts/final_validation
+cp results/split.json artifacts/final_validation/split.json
+.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --results artifacts/final_validation
+.venv/bin/python analyze_day3.py --train ../../data/train.csv --predictions artifacts/final_validation/verify/selected.predictions.tsv --out artifacts/final_validation/analysis
+.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --full-data --model-out artifacts/final_submission.joblib
+.venv/bin/python predict.py --test ../../data/test.csv --sample-submission ../../data/sample_submission.csv --model artifacts/final_submission.joblib --out artifacts/submission.csv
 ```
 
-The downloaded English POS tagger is a disclosed pretrained annotation model. It is used by the style/POS experiments and the recommended blend; the individual core lexical models work without it. Tagging does not supply authorship labels. Tags are cached within a process, so later bonus runs may have lower tagging costs.
+Evaluation reuses the saved ordered 8,000/2,000 split, seed **20261023**. Full-data fitting uses all 10,000 labeled rows. Prediction checks unique test/template IDs, template order and probability bounds, and writes 3,000 `id,label` rows. These commands generate the CSV locally; they do not upload it.
 
-The existing local workspace instead uses a virtual environment at the repository root. From that root, the equivalent commands are:
+## Reproduce the earlier experiments
+
+The daily handoffs are historical experiment records. Their pending-task and submission statements describe their original dates, not current status:
+
+- [Day 1 handoff](HANDOFF.md): core models, learning curves and structural ablations.
+- [Day 2 handoff](DAY2_HANDOFF.md): pseudo-labeling and compact-style blending; [notebook](DAY2_Q3_Q5_Q6.ipynb).
+- [Day 3 handoff](DAY3_HANDOFF.md): refit, length-bin analysis, errors and replay.
 
 ```bash
-.venv/bin/python --version
-.venv/bin/python -m pip install -r submissions/group-number-30/requirements.txt
-.venv/bin/python -m nltk.downloader -d data/nltk_data averaged_perceptron_tagger_eng
-export NLTK_DATA="$PWD/data/nltk_data"
-.venv/bin/python -m unittest discover -s submissions/group-number-30/tests -v
+mkdir -p artifacts/day1_reproduction
+cp results/split.json artifacts/day1_reproduction/split.json
+cp results/extension_plan.json artifacts/day1_reproduction/extension_plan.json
+.venv/bin/python inspect_data.py --data ../../data --results artifacts/day1_reproduction
+.venv/bin/python run_day1.py --data ../../data --results artifacts/day1_reproduction --bonus --blend
+.venv/bin/python run_day2.py --data ../../data --out artifacts/day2_reproduction
 ```
-
-Use one environment consistently. In the commands below, the working directory is `submissions/group-number-30`, with its portable `.venv`. If using the existing root environment, replace `.venv/bin/python` with `../../.venv/bin/python` after changing into this team directory.
-
-## Reproduce Day 1 on the saved split
-
-Use a fresh results folder to retain the original measurements. Copy the existing split rather than choosing another random seed:
-
-```bash
-mkdir -p results_reproduction
-cp results/split.json results_reproduction/split.json
-cp results/extension_plan.json results_reproduction/extension_plan.json
-.venv/bin/python inspect_data.py --data ../../data --results results_reproduction
-.venv/bin/python run_day1.py --data ../../data --results results_reproduction --bonus --blend
-```
-
-To reproduce only the required core comparison and learning curves, omit `--bonus --blend`. The blend requires the copied `extension_plan.json`; it runs after its character and word/style components. To fit only the blend in an existing reproduction folder, use `--blend-only`. `inspect_data.py` performs inspection without classifier training; its optional `--preview-train 5` prints only training examples. The supplied files use `id`, `text` and `label`; no schema overrides are needed.
-
-There is one editable report: the workspace root's `report/main.tex`, with Q1/Q2 answered directly below the original questions. Its PDF is root `report/output/pdf/course-report-day1.pdf`; Q0 and later-day sections remain unfinished. Edit this LaTeX file directly. Report-generating prose scripts and the duplicate team report/output folders were removed. The course PR contains team code; the report is a separate deliverable.
-
-`run_day1.py` also produces the learning-curve PDF from the recorded fits. To refresh only the canonical report figure without training or changing prose, run:
-
-```bash
-.venv/bin/python run_day1.py --results results --plot-only --figure-out ../../report/images/learning_curve.pdf
-```
-
-Compile the root `report/main.tex` in a LaTeX editor, or from root `report/` run `pdflatex -interaction=nonstopmode -halt-on-error -jobname=course-report-day1 -output-directory=output/pdf main.tex` twice.
 
 Every controlled run uses seed **20261023**, the same balanced 8,000/2,000 split, and two numerical-library threads. Ordered split IDs and input hashes are persisted. Learned vocabulary, IDF and scaling use training data only. Learning curves use nested stratified subsets of 500, 1,000, 2,000, 5,000 and 8,000 training rows, refitting preprocessing at each size while keeping the selected hyperparameters fixed.
 
@@ -196,61 +101,24 @@ Optional fixed-C=1 ablations compare 28 measured style/POS features, POS 1–3 g
 
 `--resume` is available for interrupted reproduction runs with matching provenance and model files. The checked-in `results/` is a compact evidence set, not a resumable working directory. Original core, curve and bonus records predate resume hardening and ensemble support; their fingerprint intentionally differs from current scoring code. Use a fresh results folder to reproduce them. Resume is an operational convenience, not an independent reproducibility experiment.
 
-## Verify the selected configuration
+## Build the final report
 
-The following evaluates the recommended blend again on the saved split and saves its validation model under `results/verify/`:
-
-```bash
-.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --results results
-```
-
-To verify the core fallback instead, use `results/selected_config.json` and a separate result directory containing the same `split.json`. Choose a fresh result directory containing a copy of `split.json` if a verification run already exists. `train.py --resume` can reuse an existing matching verification run; it does not create an independent refit. The `--model-out` option below is for full-data refitting; validation artifacts use the `verify/` directory.
-
-## Full-data training and Kaggle file generation
-
-These commands completed on all 10,000 labeled examples and produced the verified 3,000-row probability file. A clean-source/fresh-environment rerun matched the output exactly. The `NLTK_DATA` setup above is required for the style/POS component.
+From the team directory, refresh the learning-curve figure from saved measurements if needed:
 
 ```bash
-.venv/bin/python train.py --train ../../data/train.csv --config results/recommended_config.json --full-data --model-out artifacts/day1_recommended.joblib
-.venv/bin/python predict.py --test ../../data/test.csv --sample-submission ../../data/sample_submission.csv --model artifacts/day1_recommended.joblib --out artifacts/submission_day1_recommended.csv
+.venv/bin/python run_day1.py --results results --plot-only --figure-out report/images/learning_curve.pdf
+cd report
+mkdir -p output/pdf
+pdflatex -interaction=nonstopmode -halt-on-error -jobname=Group30_Final_Report -output-directory=output/pdf main.tex
+pdflatex -interaction=nonstopmode -halt-on-error -jobname=Group30_Final_Report -output-directory=output/pdf main.tex
 ```
 
-Prediction requires a saved full-data model, checks 3,000 unique template/test IDs, follows template order, writes `id,label`, and verifies probability bounds. Existing model/submission output paths are not overwritten. The core fallback can be refit separately using `results/selected_config.json` and different output names. A later reviewed model can likewise use a separate configuration and output name. These commands do not upload to Kaggle.
+## Evidence and development history
 
-## Evidence and artifact layout
+`results/` contains the fixed split, configurations, aggregate comparisons and validation predictions. `results/day2/` and `results/day3/` contain the later experiments and analysis. `results/day1-evidence.zip` preserves original compact Day 1 records with a SHA256 manifest. `results/software_verification.json` records the historical 18-test check; `results/final_verification.json` records the final 20-test check and submission status.
 
-| Path | Contents |
-| --- | --- |
-| `results/split.json` | Fixed ordered training/validation IDs, seed and input fingerprints |
-| `results/audit.json` | Consolidated corpus/source-overlap audit, including sample-submission schema and ID order |
-| `results/training_feature_audit.json` | Training-only evidence informing the structural hypotheses |
-| `results/comparison.json` | All ten core comparison records |
-| `results/selected_config.json` | Runnable core winner/fallback configuration |
-| `results/learning_curve.json` | All five learning-curve measurements |
-| `results/bonus_comparison.json` | Four ablations, failure list and paired bootstrap effects |
-| `results/extension_plan.json`, `results/extension_comparison.json` | Adaptive blend plan, measured result and effect versus the core winner |
-| `results/recommended_config.json` | Current Day 1 handoff recommendation, separately preserving the core selection |
-| `results/validation.predictions.tsv` | Recommended blend's 2,000 validation IDs, labels and probabilities, ready for error analysis |
-| `results/day1-evidence.zip` | Complete original small evidence files: individual run records/predictions, subset IDs, plans, plots and earlier report notes; SHA256 manifest included |
-| `results/environment.json` | Measured Python, package, platform and thread settings |
-| `artifacts/` | Retained full-data model, metadata and ready submission CSV; excluded from Git |
+Substantive commits retain authors and dates in the course fork. The final report's Q6.2 links to those public commits. Workspace Day 2 PR #1 and Day 3 PR #2 are merged; course PR #4 remains open for staff review. The obsolete root Day 1 report was removed from the working repository; earlier versions remain available in Git history.
 
-To inspect archived details, extract them explicitly into a separate directory (paths inside the ZIP are relative to the original results folder):
+## AI assistance
 
-```bash
-python -m zipfile -e results/day1-evidence.zip /tmp/group30-day1-evidence
-cd /tmp/group30-day1-evidence
-shasum -a 256 -c MANIFEST.sha256
-```
-
-Use a new extraction directory if that path already exists. The archive contains no competition passages or model weights. Old intermediate models and scratch environments were removed from the workspace; the final full-data model and CSV remain in `artifacts/`. All removed working files also have a verified recovery snapshot beside the private workspace, `../kagglecomp-cleanup-backup-2026-11-05.tar.gz` relative to the repository root. This local backup is not needed to reproduce or submit the project.
-
-The final software check record is `results/software_verification.json`: 18 passing unit tests, clean-source reproduction, output hash, and PDF verification. Small configurations, aggregate metrics, validation-ID probability tables, split IDs and report sources belong in the handoff. Competition CSVs, credentials, model weights, caches and temporary software-test fixtures do not belong in the public course PR. No passage text is needed in the validation prediction tables. Saved model files use joblib and are intended to be regenerated from the pinned code and dependencies.
-
-## Development history, AI assistance and next owners
-
-The fresh actual-data implementation begins at commit [`a4c2805`](https://github.com/Divyesh-Thirukonda/kagglecomp/commit/a4c2805). Subsequent measured results, corrections and conclusions should remain separate meaningful commits. This private workspace does not replace the required course-repository PR.
-
-Codex assisted with data inspection, implementation, tests, experiment execution and report drafting. The user provided the hypotheses and directed the data-first restart. The agent checked outputs and reproducibility interfaces; this does **not** claim independent teammate review or full human verification. Each member must record what they actually inspected, reran, understood or changed for Q6.3. No external LLM API was used to label competition passages, and hidden test labels were not retrieved.
-
-Day 2 still owns the unlabeled-data experiment, controlled improvement decision, final-model recommendation and Q3/Q5/Q6.1. Day 3 still owns generalization/error analysis, five false positives and five false negatives, Q4/Q6.2/Q6.3, final report assembly, course PR and final submission checks. Structural ablations can provide evidence for Day 2; their existence does not automatically complete those sections. Consult `HANDOFF.md` and the root `TEAM_PLAN.md` for the current status and next actions.
+Codex/ChatGPT assisted with implementation, experiment execution, programmatic checks, error interpretation and report drafting/integration. The team confirmed day ownership as listed above. Programmatic checks do not establish independent human verification of every result; Q6.3 states this distinction. No external LLM API was used to label or predict competition passages, and hidden test labels were not retrieved.

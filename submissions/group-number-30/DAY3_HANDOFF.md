@@ -1,5 +1,7 @@
 # Day 3 handoff - 2026-11-08
 
+> Historical daily record. Pending tasks, branch names and report paths below describe that day. For the completed submission and current report, use [README.md](README.md) and [FINAL_HANDOFF.md](FINAL_HANDOFF.md).
+
 ## Outcome and provenance
 
 Day 3 analysis and the integrated report draft are implemented on
