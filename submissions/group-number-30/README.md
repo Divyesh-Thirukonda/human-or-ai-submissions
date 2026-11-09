@@ -2,7 +2,7 @@
 
 ## Final submission — November 9, 2026
 
-Course PR: https://github.com/sekhari/human-or-ai-submissions/pull/3
+Course PR: https://github.com/sekhari/human-or-ai-submissions/pull/4
 
 All three days are integrated. Final local validation AUROC is **0.978162**; Kaggle public AUROC is **0.91312**, submitted and selected for final scoring. Private AUROC is not yet revealed. The 3,000 final test probabilities match Day 1 exactly; Day 3's separate refit/analysis remains recorded at 0.978174. See `results/final_verification.json` and `FINAL_HANDOFF.md`.
 
