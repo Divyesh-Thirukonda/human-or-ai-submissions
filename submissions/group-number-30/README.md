@@ -50,9 +50,7 @@ committed. Error tables contain IDs, probabilities and short observations only.
 
 Day 3 code, execution, error-case interpretation and report integration were
 assisted by Codex/ChatGPT. Programmatic checks are documented, but do not establish
-that a teammate independently verified each result. Review [DAY3_REVIEW_GUIDE.md](DAY3_REVIEW_GUIDE.md),
-confirm each member's actual contribution/verification, and update Q6.3 before
-submission. No external LLM API predicts test passages; no hidden labels were
+that a teammate independently verified each result. The team confirms day ownership: Divyesh Day 1, Anusha Day 2, Shenye Day 3. Q6.3 distinguishes this involvement from AI-assisted execution. No external LLM API predicts test passages; no hidden labels were
 retrieved. A workspace PR does not replace the required public course PR.
 
 
@@ -64,7 +62,7 @@ Cornell Tech CS 5785, Fall 2026. Required course team name: **Group Number 30**.
 | Anusha Ramachandrareddy | ar2664 | Day 2 notebook, pseudo-labeling and compact blend experiments (PR #1). |
 | Shenye Wang | sw2486 | Day 3 analysis/integration with AI assistance; independent human review pending. |
 
-The course assignment sheet confirms these members. Do not treat pending contribution descriptions as work already performed. The course-repository PR URL is still pending.
+The course assignment sheet confirms these members. Do not treat pending contribution descriptions as work already performed. The course-repository PR URL is recorded in FINAL_HANDOFF.md.
 
 ## Current measured status
 

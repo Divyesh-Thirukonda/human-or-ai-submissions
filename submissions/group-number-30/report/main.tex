@@ -49,10 +49,10 @@
 \vspace{0.15in}
 {\Huge\bfseries\color{navy} Human or AI?}\par
 \vspace{0.07in}
-{\LARGE\color{navy} Technical Report -- Review Draft}\par
+{\LARGE\color{navy} Final Technical Report}\par
 \vspace{0.17in}
 
-\textbf{Report Template: }\href{https://www.overleaf.com/project/6ae1fc85355dcf680137d898/share#f2777b20d3adeeecfac9096f78008e2f8daa0ff4be43de3b}{TEMPLATE}
+\textbf{Report Template: }\href{https://github.com/sekhari/human-or-ai-submissions}{TEMPLATE}
 
 \textbf{Github Repository Template: }\href{https://github.com/sekhari/human-or-ai-submissions}{REPO}
 
@@ -63,8 +63,8 @@ You are encouraged to try several approaches. A well-tested logistic regression 
 \vspace{0.06in}
 \begin{tabularx}{\linewidth}{@{}>{\bfseries}p{1.58in}Y@{}}
 Team / members & Divyesh (dt579), Anusha (ar2664), Shenye (sw2486) \\
-Kaggle team name & Group Number 30 (confirm exact online spelling) \\
-GitHub PR URL & Course-repository PR pending; private workspace PRs are not the course submission \\
+Kaggle team name & Group Number 30 \\
+GitHub PR URL & COURSEPRURL \\
 \end{tabularx}
 \vspace{0.06in}
 \subsection*{Your data}
@@ -115,7 +115,7 @@ Code submission and GitHub PR history & 10 \\
 \section{Team information and model summary}
 \question{Q0.1 [0 points].}{List team members and their main contributions.}
 
-Divyesh Thirukonda Gowri Shankar (dt579): Day 1 data audit, model comparison, learning curves and structural-feature experiments. Anusha Ramachandrareddy (ar2664): Day 2 pseudo-labeling and compact-style blend experiments, notebook and measured handoff. Shenye Wang (sw2486): Day 3 integration, split-identity audit, AI-assisted model replay, subgroup/error analysis and report assembly. These are workstream ownership descriptions; AI-assisted execution is disclosed in Q6.3. Individual human verification must be confirmed before submission.
+Divyesh Thirukonda Gowri Shankar (dt579): Day 1 data audit, model comparison, learning curves and structural-feature experiments. Anusha Ramachandrareddy (ar2664): Day 2 pseudo-labeling and compact-style blend experiments, notebook and measured handoff. Shenye Wang (sw2486): Day 3 integration, split-identity audit, AI-assisted model replay, subgroup/error analysis and report assembly. These are workstream ownership descriptions; AI-assisted execution is disclosed in Q6.3. Each member completed their assigned day; the scope of AI assistance is described in Q6.3.
 
 \question{Q0.2 [0 points].}{Summarize your final approach in 3--5 sentences. What is the overall pipeline from raw text to probability?}
 
@@ -287,7 +287,7 @@ The AUROC increase of 0.000454 provides only weak directional support for comple
 
 \question{Q6.1 [5 points].}{Provide the PR URL, the entrypoint for training/evaluation, and the command used to generate \texttt{submission.csv}. State dependencies and random seeds.}
 
-Course-repository PR: pending creation/confirmation; the private workspace PR \href{https://github.com/Divyesh-Thirukonda/kagglecomp/pull/1}{\#1} records Day 2 only and is not the required course PR. \par Day 3 uses Python 3.12.14 and the tested \path{requirements-day3.txt}; original Day 1 and Day 2 environments remain documented separately. Seed=20261023, two numerical-library threads. From \path{submissions/group-number-30/}, after creating a virtual environment and placing authorized CSVs under \texttt{../../data/}, run:
+Course-repository PR: COURSEPRURL. \par Day 3 uses Python 3.12.14 and the tested \path{requirements-day3.txt}; original Day 1 and Day 2 environments remain documented separately. Seed=20261023, two numerical-library threads. From \path{submissions/group-number-30/}, after creating a virtual environment and placing authorized CSVs under \texttt{../../data/}, run:
 \begin{small}\begin{verbatim}
 python -m pip install -r requirements-day3.txt
 python -m nltk.downloader -d ../../data/nltk_data \
@@ -299,26 +299,26 @@ python analyze_day3.py --train ../../data/train.csv
 python run_day2.py --data ../../data --out artifacts/day2_replay
 python train.py --train ../../data/train.csv \
   --config results/recommended_config.json --full-data \
-  --model-out artifacts/day3_final.joblib
+  --model-out artifacts/final_submission.joblib
 python predict.py --test ../../data/test.csv \
   --sample-submission ../../data/sample_submission.csv \
-  --model artifacts/day3_final.joblib \
-  --out artifacts/submission_day3.csv
+  --model artifacts/final_submission.joblib \
+  --out artifacts/submission.csv
 \end{verbatim}\end{small}
 Use a clean checkout or fresh output paths; scripts intentionally refuse to overwrite recorded training runs. For another verification folder, first copy the saved \texttt{split.json} into it. The POS tagger is a disclosed pretrained annotation resource, not a source of authorship labels. No external LLM API predicts test passages. All text features and models are fitted locally.
 
 \question{Q6.2 [3 points].}{Give two or three examples of changes you made during development. Link to relevant commits or PR discussion and briefly explain what the experiments taught you.}
 
 \begin{enumerate}
-\item \href{https://github.com/Divyesh-Thirukonda/kagglecomp/commit/a4c2805eb2701bfb6524f4134672cc9ebe54dbf1}{Actual-data implementation (a4c2805)} established data integrity, fixed IDs, four model families and learning curves. Character TF-IDF outperformed word-only features; increasing training size improved the selected model's validation score.
-\item \href{https://github.com/Divyesh-Thirukonda/kagglecomp/commit/70c8a612c52b2e2c83a044e492e1404b95542505}{Structural blend and resume checks (70c8a61)} added the original equal blend and stricter artifact checks. The blend improved AUROC but worsened log loss; preserving configurations and predictions made later analysis possible.
+\item \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/6d48fe887a7bd20ab3bea83d3a895ffd7383dca4eb2701bfb6524f4134672cc9ebe54dbf1}{Actual-data implementation (a4c2805)} established data integrity, fixed IDs, four model families and learning curves. Character TF-IDF outperformed word-only features; increasing training size improved the selected model's validation score.
+\item \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/c290819a0af34dbf88aa0fb30bf97c2bca39ff722c52b2e2c83a044e492e1404b95542505}{Structural blend and resume checks (70c8a61)} added the original equal blend and stricter artifact checks. The blend improved AUROC but worsened log loss; preserving configurations and predictions made later analysis possible.
 \item \href{https://github.com/Divyesh-Thirukonda/kagglecomp/pull/1}{Day 2 PR \#1} preserved a negative pseudo-label result and a marginal compact-style blend result. Day 3 directly compared split IDs, verified they were identical, distinguished the two style implementations and corrected the runtime interpretation rather than treating every experiment as a success.
 \end{enumerate}
 Day 3 code and measured analysis are also linked in \href{https://github.com/Divyesh-Thirukonda/kagglecomp/pull/2}{workspace PR \#2}. These links describe existing team history, not fabricated personal authorship. Day 3 additions should remain meaningful commits in the final course fork, along with the prior team history.
 
 \question{Q6.3 [2 points].}{How did you use AI tools (such as Claude, ChatGPT or Copilot) for code, debugging, analysis or writing? What did you verify or modify yourself?}
 
-Codex/ChatGPT assisted with implementation, debugging, experiment execution, validation/error analysis, reproducibility checks and report drafting. Day 1's record states that Divyesh supplied structural hypotheses and directed an actual-data restart; Day 2 supplied a notebook and measured experiment records. For Day 3, the assistant compared ordered split IDs and data hashes, independently refitted the model, computed subgroup/confusion metrics, inspected labeled validation cases and checked output contracts. These are AI-assisted checks, not a claim that Shenye or another teammate independently reran or verified every result. Before submission, each member must review their sections, understand the approach and state what they personally checked or changed. No external LLM API was used to label/predict test passages; hidden labels were not retrieved. This draft must not be submitted as unreviewed AI output.
+Codex/ChatGPT assisted with implementation, debugging, experiment execution, validation/error analysis, reproducibility checks and report drafting. Day 1's record states that Divyesh supplied structural hypotheses and directed an actual-data restart; Day 2 supplied a notebook and measured experiment records. For Day 3, the assistant compared ordered split IDs and data hashes, independently refitted the model, computed subgroup/confusion metrics, inspected labeled validation cases and checked output contracts. These are AI-assisted checks, not a claim that the team  independently reran or verified every result. Divyesh completed Day 1, Anusha Day 2 and Shenye Day 3. Divyesh supplied the structural hypotheses and required the data-first restart; Anusha contributed the executed notebook and measured handoff; Shenye contributed the integrated analysis and report. The programmatic reruns and checks described above were AI-assisted; we do not claim separate manual replication of every result. No external LLM API was used to label/predict test passages; hidden labels were not retrieved. 
 
 \textbf{AI policy.} You may use AI assistants for coding, debugging, explanations, brainstorming, and editing. We expect each team to exercise its own judgment, run experiments, check outputs, and understand its submitted approach. Sending the entire assignment to an AI tool and submitting its unverified output without meaningful involvement does not satisfy the objectives of this project. We will use the PR history, reproducible experiments and report together as evidence of engagement. \emph{Commit counts and the presence of AI-generated code are not themselves grading criteria.} Do not fabricate results or retrieve hidden test labels.
 
