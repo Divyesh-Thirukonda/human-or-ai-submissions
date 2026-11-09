@@ -64,7 +64,7 @@ You are encouraged to try several approaches. A well-tested logistic regression 
 \begin{tabularx}{\linewidth}{@{}>{\bfseries}p{1.58in}Y@{}}
 Team / members & Divyesh (dt579), Anusha (ar2664), Shenye (sw2486) \\
 Kaggle team name & Group Number 30 \\
-GitHub PR URL & COURSEPRURL \\
+GitHub PR URL & \url{https://github.com/sekhari/human-or-ai-submissions/pull/3} \\
 \end{tabularx}
 \vspace{0.06in}
 \subsection*{Your data}
@@ -124,11 +124,11 @@ The selected pipeline averages two logistic-regression probabilities with equal 
 \question{Q0.3 [0 points].}{Record your final scores (enter private score only once it is revealed).}
 
 \begin{tabularx}{\linewidth}{@{}Yp{2.5in}@{}}\toprule Metric & Score/status \\ \midrule
-Validation AUROC (Day 3 independent refit) & 0.978174 \\
-Kaggle public AUROC & Pending actual Kaggle upload/result \\
+Validation AUROC (final local refit) & 0.978162 \\
+Kaggle public AUROC & 0.91312 (November 9 submission) \\
 Kaggle private AUROC & Not yet revealed \\
 \bottomrule\end{tabularx}
-The original Day 1 selected-model AUROC was 0.978162. Different recorded package environments give slightly different probabilities; Day 3 is a fresh refit, not a byte-identical reproduction.
+The November 9 final local refit reproduced Day 1 AUROC 0.978162 and all 3,000 Day 1 test probabilities exactly. Day 3 independently obtained 0.978174; its validation probabilities differ by at most 0.0158745. Even with the pinned Day 3 package versions and matching tagger resource, the local rerun is not byte-identical to Day 3. Q4 retains the Day 3 analysis of the same configuration. The public-test score is lower than validation by 0.065042; distribution shift and repeated validation selection are plausible explanations, not established causes.
 
 \newpage
 \section{Model comparison and selection (15 points)}
@@ -170,7 +170,7 @@ Before inspecting any model validation score, we fixed C in \{0.3,1,3\} for word
 
 \question{Q1.4 [3 points].}{Which approach did you choose for your final submission? Explain using validation performance, computational cost and/or stability. If you later changed the model, explain why.}
 
-We retain the Day 1 equal-weight probability blend of character TF-IDF logistic regression (C=3) and word TF-IDF plus 28 style/POS features with logistic regression (C=1). Its original validation AUROC was 0.978162 versus 0.970756 for character-only, with recorded fitting times 40.54 versus 9.00 seconds. Day 2 tested a different, 11-feature compact-style blend: 0.971276 versus its character baseline 0.970822. It did not reproduce or supersede the 28-feature blend. Day 3 confirmed identical ordered split IDs across days and independently refitted the original recommendation, obtaining 0.978174. Log loss remains worse than character-only, and repeated validation use creates selection optimism. No new blend weights or classification thresholds were tuned for Day 3. Character-only remains the simpler fallback; no Kaggle score is claimed.
+We retain the Day 1 equal-weight probability blend of character TF-IDF logistic regression (C=3) and word TF-IDF plus 28 style/POS features with logistic regression (C=1). Its original validation AUROC was 0.978162 versus 0.970756 for character-only, with recorded fitting times 40.54 versus 9.00 seconds. Day 2 tested a different, 11-feature compact-style blend: 0.971276 versus its character baseline 0.970822. It did not reproduce or supersede the 28-feature blend. Day 3 confirmed identical ordered split IDs across days and independently refitted the original recommendation, obtaining 0.978174. Log loss remains worse than character-only, and repeated validation use creates selection optimism. No new blend weights or classification thresholds were tuned for Day 3. Character-only remains the simpler fallback. The final local refit reproduced validation AUROC 0.978162; the Kaggle result is recorded in Q0.3.
 
 \section{Effect of training data size (10 points)}
 
@@ -287,7 +287,7 @@ The AUROC increase of 0.000454 provides only weak directional support for comple
 
 \question{Q6.1 [5 points].}{Provide the PR URL, the entrypoint for training/evaluation, and the command used to generate \texttt{submission.csv}. State dependencies and random seeds.}
 
-Course-repository PR: COURSEPRURL. \par Day 3 uses Python 3.12.14 and the tested \path{requirements-day3.txt}; original Day 1 and Day 2 environments remain documented separately. Seed=20261023, two numerical-library threads. From \path{submissions/group-number-30/}, after creating a virtual environment and placing authorized CSVs under \texttt{../../data/}, run:
+Course-repository PR: \url{https://github.com/sekhari/human-or-ai-submissions/pull/3}. \par Day 3 uses Python 3.12.14 and the tested \path{requirements-day3.txt}; original Day 1 and Day 2 environments remain documented separately. Seed=20261023, two numerical-library threads. From \path{submissions/group-number-30/}, after creating a virtual environment and placing authorized CSVs under \texttt{../../data/}, run:
 \begin{small}\begin{verbatim}
 python -m pip install -r requirements-day3.txt
 python -m nltk.downloader -d ../../data/nltk_data \
@@ -310,24 +310,24 @@ Use a clean checkout or fresh output paths; scripts intentionally refuse to over
 \question{Q6.2 [3 points].}{Give two or three examples of changes you made during development. Link to relevant commits or PR discussion and briefly explain what the experiments taught you.}
 
 \begin{enumerate}
-\item \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/6d48fe887a7bd20ab3bea83d3a895ffd7383dca4eb2701bfb6524f4134672cc9ebe54dbf1}{Actual-data implementation (a4c2805)} established data integrity, fixed IDs, four model families and learning curves. Character TF-IDF outperformed word-only features; increasing training size improved the selected model's validation score.
-\item \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/c290819a0af34dbf88aa0fb30bf97c2bca39ff722c52b2e2c83a044e492e1404b95542505}{Structural blend and resume checks (70c8a61)} added the original equal blend and stricter artifact checks. The blend improved AUROC but worsened log loss; preserving configurations and predictions made later analysis possible.
-\item \href{https://github.com/Divyesh-Thirukonda/kagglecomp/pull/1}{Day 2 PR \#1} preserved a negative pseudo-label result and a marginal compact-style blend result. Day 3 directly compared split IDs, verified they were identical, distinguished the two style implementations and corrected the runtime interpretation rather than treating every experiment as a success.
+\item \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/6d48fe887a7bd20ab3bea83d3a895ffd7383dca4}{Actual-data implementation (6d48fe8)} established data integrity, fixed IDs, four model families and learning curves. Character TF-IDF outperformed word-only features; increasing training size improved the selected model's validation score.
+\item \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/c290819a0af34dbf88aa0fb30bf97c2bca39ff72}{Structural blend and resume checks (c290819)} added the original equal blend and stricter artifact checks. The blend improved AUROC but worsened log loss; preserving configurations and predictions made later analysis possible.
+\item \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/4545a27a44c33d6b1890244b2f08d65b9f82ff99}{Day 2 experiments} preserved a negative pseudo-label result and a marginal compact-style blend result. Day 3 directly compared split IDs, verified they were identical, distinguished the two style implementations and corrected the runtime interpretation rather than treating every experiment as a success.
 \end{enumerate}
-Day 3 code and measured analysis are also linked in \href{https://github.com/Divyesh-Thirukonda/kagglecomp/pull/2}{workspace PR \#2}. These links describe existing team history, not fabricated personal authorship. Day 3 additions should remain meaningful commits in the final course fork, along with the prior team history.
+Day 3 split auditing and error analysis are preserved in \href{https://github.com/Divyesh-Thirukonda/human-or-ai-submissions/commit/cefec50b94ca9352a6ff2881d89dfce05485aaff}{the course-fork history}. Transferred commits retain original authors and author dates.
 
 \question{Q6.3 [2 points].}{How did you use AI tools (such as Claude, ChatGPT or Copilot) for code, debugging, analysis or writing? What did you verify or modify yourself?}
 
-Codex/ChatGPT assisted with implementation, debugging, experiment execution, validation/error analysis, reproducibility checks and report drafting. Day 1's record states that Divyesh supplied structural hypotheses and directed an actual-data restart; Day 2 supplied a notebook and measured experiment records. For Day 3, the assistant compared ordered split IDs and data hashes, independently refitted the model, computed subgroup/confusion metrics, inspected labeled validation cases and checked output contracts. These are AI-assisted checks, not a claim that the team  independently reran or verified every result. Divyesh completed Day 1, Anusha Day 2 and Shenye Day 3. Divyesh supplied the structural hypotheses and required the data-first restart; Anusha contributed the executed notebook and measured handoff; Shenye contributed the integrated analysis and report. The programmatic reruns and checks described above were AI-assisted; we do not claim separate manual replication of every result. No external LLM API was used to label/predict test passages; hidden labels were not retrieved. 
+Codex/ChatGPT assisted with implementation, debugging, experiment execution, validation/error analysis and report drafting. Divyesh completed Day 1, supplied structural hypotheses and directed the actual-data restart. Anusha completed Day 2 and contributed the executed notebook and measured handoff. Shenye completed Day 3 integration, analysis and report assembly. AI-assisted checks compared split IDs and hashes, refitted models, computed subgroup metrics, inspected labeled validation cases and verified output contracts. We do not claim separate manual replication of every result. No external LLM API labeled or predicted test passages, and hidden labels were not retrieved.
 
 \textbf{AI policy.} You may use AI assistants for coding, debugging, explanations, brainstorming, and editing. We expect each team to exercise its own judgment, run experiments, check outputs, and understand its submitted approach. Sending the entire assignment to an AI tool and submitting its unverified output without meaningful involvement does not satisfy the objectives of this project. We will use the PR history, reproducible experiments and report together as evidence of engagement. \emph{Commit counts and the presence of AI-generated code are not themselves grading criteria.} Do not fabricate results or retrieve hidden test labels.
 
 
 \section*{Final submission checklist}
 \begin{itemize}[label=$\square$]
-\item Final probabilities generated and format-checked; actual Kaggle upload/status must be confirmed.
-\item Report draft assembled; team review and course-portal upload remain to be confirmed.
-\item Course-repository PR must be created/linked; a workspace PR alone is insufficient.
+\item Final probabilities submitted to Kaggle and selected for the final leaderboard score; public AUROC 0.91312.
+\item Completed report assembled for the Gradescope Kaggle Competition submission.
+\item Course-repository PR linked on the title page and in Q6.1.
 \item Code and dependencies recreate final predictions (within reasonable numerical tolerance).
 \item Relevant experiments and seed/configuration details are recorded.
 \item AI-use disclosure is complete; hidden labels were not retrieved externally.

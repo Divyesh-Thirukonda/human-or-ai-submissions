@@ -1,5 +1,14 @@
 # Group Number 30 — Human or AI?
 
+## Final submission — November 9, 2026
+
+Course PR: https://github.com/sekhari/human-or-ai-submissions/pull/3
+
+All three days are integrated. Final local validation AUROC is **0.978162**; Kaggle public AUROC is **0.91312**, submitted and selected for final scoring. Private AUROC is not yet revealed. The 3,000 final test probabilities match Day 1 exactly; Day 3's separate refit/analysis remains recorded at 0.978174. See `results/final_verification.json` and `FINAL_HANDOFF.md`.
+
+The canonical final report is `report/main.tex`, compiled to `report/output/pdf/Group30_Final_Report.pdf`. The following Day 3 commands reproduce the selected configuration; for the final filenames use `artifacts/final_submission.joblib` and `artifacts/submission.csv`. Earlier sections and handoffs preserve their original dates and status.
+
+
 ## Day 3 review status (2026-11-08)
 
 The current integrated review branch is `day3-validation-report`, based on Day 2
